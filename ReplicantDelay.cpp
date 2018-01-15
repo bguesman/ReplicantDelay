@@ -262,7 +262,11 @@ void ReplicantDelay::ProcessDoubleReplacing(
   RingBuffer *buffer;
   double readVal;
   for (int i = 0; i < NOutChannels(); i++) {
-    input = inputs[(NOutChannels() > NInChannels()) ? 0 : i];
+    if (IsInChannelConnected(1)) {
+      input = inputs[i];
+    } else {
+      input = inputs[0];
+    }
     output = outputs[i];
     buffer = buffers[i];
     for (int n = 0; n < nFrames; n++) {
