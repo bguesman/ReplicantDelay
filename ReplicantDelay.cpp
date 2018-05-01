@@ -224,6 +224,9 @@ ReplicantDelay::ReplicantDelay(IPlugInstanceInfo instanceInfo) : IPLUG_CTOR(kNum
     tempoSync[i] = false;
   }
   
+  // set a default value for the tempo
+  tempo = 120.0;
+  
   // do the plugin stuff as usual
   CreateParams();
   CreateGraphics();
@@ -257,6 +260,16 @@ void ReplicantDelay::ProcessDoubleReplacing(
                                        int nFrames)
 {
   // Mutex is already locked for us.
+  // First, check if the tempo has changed, since there is no function for the
+  // host to notify us
+  double newTempo = GetTempo();
+  if (tempo != newTempo) {
+    tempo = newTempo;
+    OnParamChange(mLeftDelayTimeMs);
+    OnParamChange(mRightDelayTimeMs);
+    OnParamChange(mLeftModRate);
+    OnParamChange(mRightModRate);
+  }
   double *input;
   double *output;
   RingBuffer *buffer;
@@ -648,6 +661,10 @@ void ReplicantDelay::CreateParams() {
       }
     }
   }
+  // hack: for some reason, accessing these parameters seems to
+  // get them initialized properly...
+  printf("DELAY TIME LEFT, %f", GetParam(mLeftDelayTimeMs)->Value());
+  printf("DELAY TIME RIGHT, %f", GetParam(mRightDelayTimeMs)->Value());
   GetParam(mLeftDelayTimeMs)->SetShape(2.5);
   GetParam(mRightDelayTimeMs)->SetShape(2.5);
   GetParam(mLeftModRate)->SetShape(3);
@@ -739,7 +756,7 @@ double ReplicantDelay::noteToSamples(int t) {
   if (noteGetsBeat < 1) {
     noteGetsBeat = 4;
   }
-  double samplesPerMeasure = msToSamples((beatsPerMeasure / (GetTempo() * 1.0)) * 60.0 * 1000.0);
+  double samplesPerMeasure = msToSamples((beatsPerMeasure / (tempo * 1.0)) * 60.0 * 1000.0);
   double measuresPerBeat = 1.0 / beatsPerMeasure;
   return fmin(samplesPerMeasure * measuresPerBeat * noteGetsBeat * quantizedTimeMultipliers[t], msToSamples(MAX_DELAY_TIME_MS));
 }

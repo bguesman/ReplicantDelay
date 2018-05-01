@@ -42,6 +42,7 @@ private:
   bool syncParams[NUM_SYNC_PARAMS];
   bool tempoSync[2 * MAX_NUM_DELAY_LINES]; // first are delay, then modulation
   bool tempoSyncGraphicsLoaded; // graphics loaded yet?
+  double tempo;
   
   // ring buffers
   RingBuffer **buffers;
